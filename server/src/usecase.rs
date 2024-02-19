@@ -12,6 +12,9 @@ fn allocate_new_task<R: Repository>(repo: &mut R) -> Task {
 pub fn handle_ready<R: Repository>(repo: &mut R, client_name: String) -> Task {
     // check if this client has an existing tasks, if so return it again
     // otherwise, allocate new task
+    if let Some(task) = repo.fetch_update_by_client(client_name.clone()) {
+        return task;
+    }
 
     let task = allocate_new_task(repo);
     repo.add_to_queue(task, client_name);

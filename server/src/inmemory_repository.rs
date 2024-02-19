@@ -42,6 +42,10 @@ impl Repository for InMemoryRepository {
         self.from = from;
     }
 
+    fn fetch_update_by_client(&self, client_name: ClientName) -> Option<Task> {
+        self.queue.get(&client_name).copied()
+    }
+
     fn add_to_queue(&mut self, from_to: Task, client_name: ClientName) {
         let _ = self.queue.insert(client_name, from_to);
 
