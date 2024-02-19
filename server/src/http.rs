@@ -1,7 +1,9 @@
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
 
-type Handler = fn(Request) -> String;
+use crate::domain::Repository;
+
+type Handler<R> = fn(Request, &mut R) -> String;
 
 pub type Request = String;
 
@@ -41,14 +43,14 @@ fn parse_request(input: String) -> Request {
     body.to_string()
 }
 
-fn handle_client(stream: TcpStream, handler: Handler) {
+fn handle_client<R: Repository>(stream: TcpStream, handler: Handler<R>, repo: &mut R) {
     let raw_request = handle_read(&stream);
     let request = parse_request(raw_request);
-    let response_json = handler(request);
+    let response_json = handler(request, repo);
     handle_write(stream, response_json);
 }
 
-pub fn serve(port: usize, handler: Handler) {
+pub fn serve<R: Repository>(port: usize, handler: Handler<R>, repo: &mut R) {
     let addres = format!("127.0.0.1:{}", port);
     let listener = TcpListener::bind(addres).unwrap();
     println!("Listening for connections on port {}", port);
@@ -56,7 +58,7 @@ pub fn serve(port: usize, handler: Handler) {
     for stream in listener.incoming() {
         match stream {
             Ok(stream) => {
-                handle_client(stream, handler);
+                handle_client(stream, handler, repo);
             }
             Err(e) => {
                 println!("Unable to connect: {}", e);

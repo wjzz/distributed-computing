@@ -1,10 +1,13 @@
+mod domain;
 mod http;
+mod inmemory_repository;
+mod usecase;
 
+use domain::{ClientName, Repository, ThreeNResponse, ThreeNResult};
 use http::{serve, Request};
-use serde::{Deserialize, Serialize};
-
-type ClientName = String;
-type ThreeNResult = String;
+use inmemory_repository::InMemoryRepository;
+use serde::Deserialize;
+use usecase::{handle_ready, handle_solved};
 
 #[derive(Deserialize)]
 #[serde(tag = "type")]
@@ -20,33 +23,24 @@ enum ThreeNRequest {
     },
 }
 
-#[derive(Serialize)]
-enum ThreeNResponse {
-    Solve { from: u64, to: u64 },
-    Ok,
-}
-
-fn handle_three_n_request(request: ThreeNRequest) -> ThreeNResponse {
-    let from = 1;
-    let to = 100;
-
+fn router<R: Repository>(repo: &mut R, request: ThreeNRequest) -> ThreeNResponse {
     match request {
-        ThreeNRequest::Ready { client_name } => ThreeNResponse::Solve { from, to },
+        ThreeNRequest::Ready { client_name } => handle_ready(repo, client_name),
         ThreeNRequest::Solved {
             client_name,
             from,
             to,
             result,
-        } => ThreeNResponse::Ok,
+        } => handle_solved(repo, client_name, from, to, result),
     }
 }
 
-pub fn handler(request_body: Request) -> String {
-    println!("request body = {}", request_body);
+pub fn handler<R: Repository>(request_body: Request, repo: &mut R) -> String {
+    // println!("request body = {}", request_body);
     if let Ok(request) = serde_json::from_str(&request_body) {
-        let response = handle_three_n_request(request);
+        let response = router(repo, request);
         let response = serde_json::to_string(&response).unwrap();
-        println!("response = {}", response);
+        // println!("response = {}", response);
         response
     } else {
         "incorrect request".to_string()
@@ -55,5 +49,6 @@ pub fn handler(request_body: Request) -> String {
 
 fn main() {
     let port = 5555;
-    serve(port, handler);
+    let mut repo = InMemoryRepository::new();
+    serve(port, handler, &mut repo);
 }
