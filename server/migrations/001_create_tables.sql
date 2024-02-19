@@ -21,5 +21,6 @@ create table results (
     task_to bigint not null,
     result text not null,
     client_name text not null,
-    finished_at timestamp default current_timestamp
+    started_at timestamp not null,
+    finished_at timestamp not null default current_timestamp
 );

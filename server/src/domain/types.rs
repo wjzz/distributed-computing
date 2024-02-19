@@ -1,3 +1,4 @@
+use chrono::Utc;
 use serde::Serialize;
 
 #[derive(Serialize)]
@@ -14,3 +15,9 @@ pub struct ThreeNState {
 
 pub type ClientName = String;
 pub type ThreeNResult = String;
+
+pub type Timestamp = i64;
+
+pub fn current_timestamp() -> Timestamp {
+    Utc::now().timestamp()
+}

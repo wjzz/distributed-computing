@@ -1,13 +1,15 @@
 use std::collections::HashMap;
 
-use crate::domain::{ClientName, Repository, Task, ThreeNResult, ThreeNState};
+use crate::domain::{
+    ClientName, RawTask, Repository, StartedTask, ThreeNResult, ThreeNState, Timestamp,
+};
 
 pub struct InMemoryRepository {
     from: u64,
     to: u64,
     increment: u64,
-    queue: HashMap<ClientName, Task>,
-    results: HashMap<Task, (ClientName, ThreeNResult)>,
+    queue: HashMap<ClientName, StartedTask>,
+    results: HashMap<RawTask, (ClientName, Timestamp, ThreeNResult)>,
 }
 
 impl InMemoryRepository {
@@ -30,7 +32,7 @@ impl InMemoryRepository {
 }
 
 impl Repository for InMemoryRepository {
-    fn fetch_current_state(&self) -> ThreeNState {
+    fn fetch_current_state(&mut self) -> ThreeNState {
         ThreeNState {
             from: self.from,
             to: self.to,
@@ -42,13 +44,13 @@ impl Repository for InMemoryRepository {
         self.from = from;
     }
 
-    fn add_to_queue(&mut self, task: Task, client_name: ClientName) {
-        let _ = self.queue.insert(client_name, task);
+    fn add_to_queue(&mut self, task: RawTask, client_name: ClientName) {
+        let _ = self.queue.insert(client_name, task.to_started_task());
 
         self.debug();
     }
 
-    fn fetch_queued_task_by_client(&self, client_name: ClientName) -> Option<Task> {
+    fn fetch_queued_task_by_client(&mut self, client_name: ClientName) -> Option<StartedTask> {
         self.queue.get(&client_name).copied()
     }
 
@@ -60,12 +62,13 @@ impl Repository for InMemoryRepository {
         self.results
             .iter()
             .filter(|(_k, v)| v.0 == client_name)
-            .map(|(_k, v)| v.1.clone())
+            .map(|(_k, v)| v.2.clone())
             .collect()
     }
 
-    fn store_results(&mut self, client_name: ClientName, task: Task, result: ThreeNResult) {
-        self.results.insert(task, (client_name, result));
+    fn store_results(&mut self, client_name: ClientName, task: StartedTask, result: ThreeNResult) {
+        self.results
+            .insert(task.to_raw_task(), (client_name, task.started_at, result));
 
         self.debug();
     }

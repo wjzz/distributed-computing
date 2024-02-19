@@ -1,19 +1,19 @@
-use crate::domain::{ClientName, Repository, Task, ThreeNResult};
+use crate::domain::{ClientName, RawTask, Repository, ThreeNResult};
 
-fn allocate_new_task<R: Repository>(repo: &mut R) -> Task {
+fn allocate_new_task<R: Repository>(repo: &mut R) -> RawTask {
     let state = repo.fetch_current_state();
     let from = state.from;
     let to = state.from + state.increment - 1;
 
     repo.update_from(state.from + state.increment);
-    Task { from, to }
+    RawTask { from, to }
 }
 
-pub fn handle_ready<R: Repository>(repo: &mut R, client_name: String) -> Task {
+pub fn handle_ready<R: Repository>(repo: &mut R, client_name: String) -> RawTask {
     // check if this client has an existing tasks, if so return it again
     // otherwise, allocate new task
     if let Some(task) = repo.fetch_queued_task_by_client(client_name.clone()) {
-        return task;
+        return task.to_raw_task();
     }
 
     let task = allocate_new_task(repo);
@@ -25,19 +25,19 @@ pub fn handle_ready<R: Repository>(repo: &mut R, client_name: String) -> Task {
 pub fn handle_solved<R: Repository>(
     repo: &mut R,
     client_name: ClientName,
-    task: Task,
+    task: RawTask,
     result: ThreeNResult,
 ) -> () {
-    if repo
-        .fetch_queued_task_by_client(client_name.clone())
-        .is_none()
-    {
-        eprintln!("Unknown problem");
-        return;
+    match repo.fetch_queued_task_by_client(client_name.clone()) {
+        None => {
+            eprintln!("Unknown problem");
+            return;
+        }
+        Some(task_timestamp) => {
+            repo.delete_queued_task_by_client(client_name.clone());
+            repo.store_results(client_name, task_timestamp, result);
+        }
     }
-
-    repo.delete_queued_task_by_client(client_name.clone());
-    repo.store_results(client_name, task, result);
 }
 
 #[cfg(test)]
@@ -60,7 +60,7 @@ mod tests {
 
         assert_eq!(
             task,
-            Task {
+            RawTask {
                 from: 1,
                 to: 1_000_000
             }
@@ -109,7 +109,7 @@ mod tests {
 
         assert_eq!(
             task2,
-            Task {
+            RawTask {
                 from: 1_000_001,
                 to: 2_000_000
             }

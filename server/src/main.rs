@@ -1,11 +1,12 @@
+mod db;
 mod domain;
 mod http;
 mod usecase;
 
-use domain::{ClientName, Repository, Task, ThreeNResponse, ThreeNResult};
+use domain::{ClientName, RawTask, Repository, ThreeNResponse, ThreeNResult};
 use http::{serve, Request};
 use serde::Deserialize;
-use usecase::{handle_ready, handle_solved, InMemoryRepository};
+use usecase::{handle_ready, handle_solved};
 
 #[derive(Deserialize)]
 #[serde(tag = "type")]
@@ -24,7 +25,7 @@ enum ThreeNRequest {
 fn router<R: Repository>(repo: &mut R, request: ThreeNRequest) -> ThreeNResponse {
     match request {
         ThreeNRequest::Ready { client_name } => {
-            let Task { from, to } = handle_ready(repo, client_name);
+            let RawTask { from, to } = handle_ready(repo, client_name);
             ThreeNResponse::Solve { from, to }
         }
         ThreeNRequest::Solved {
@@ -36,7 +37,7 @@ fn router<R: Repository>(repo: &mut R, request: ThreeNRequest) -> ThreeNResponse
             handle_solved(
                 repo,
                 client_name,
-                Task {
+                RawTask {
                     from: from.parse().unwrap(),
                     to: to.parse().unwrap(),
                 },
@@ -61,6 +62,7 @@ pub fn handler<R: Repository>(request_body: Request, repo: &mut R) -> String {
 
 fn main() {
     let port = 5555;
-    let mut repo = InMemoryRepository::new();
+    // let mut repo = InMemoryRepository::new();
+    let mut repo = db::PgRepository::new();
     serve(port, handler, &mut repo);
 }
