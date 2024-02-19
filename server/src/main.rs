@@ -1,13 +1,11 @@
 mod domain;
 mod http;
-mod inmemory_repository;
 mod usecase;
 
 use domain::{ClientName, Repository, Task, ThreeNResponse, ThreeNResult};
 use http::{serve, Request};
-use inmemory_repository::InMemoryRepository;
 use serde::Deserialize;
-use usecase::{handle_ready, handle_solved};
+use usecase::{handle_ready, handle_solved, InMemoryRepository};
 
 #[derive(Deserialize)]
 #[serde(tag = "type")]

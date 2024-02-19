@@ -43,7 +43,7 @@ pub fn handle_solved<R: Repository>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::inmemory_repository::*;
+    use crate::usecase::InMemoryRepository;
 
     fn client_name() -> ClientName {
         "client1".to_string()
