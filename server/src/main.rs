@@ -3,7 +3,7 @@ mod http;
 mod inmemory_repository;
 mod usecase;
 
-use domain::{ClientName, Repository, ThreeNResponse, ThreeNResult};
+use domain::{ClientName, Repository, Task, ThreeNResponse, ThreeNResult};
 use http::{serve, Request};
 use inmemory_repository::InMemoryRepository;
 use serde::Deserialize;
@@ -25,13 +25,19 @@ enum ThreeNRequest {
 
 fn router<R: Repository>(repo: &mut R, request: ThreeNRequest) -> ThreeNResponse {
     match request {
-        ThreeNRequest::Ready { client_name } => handle_ready(repo, client_name),
+        ThreeNRequest::Ready { client_name } => {
+            let Task { from, to } = handle_ready(repo, client_name);
+            ThreeNResponse::Solve { from, to }
+        }
         ThreeNRequest::Solved {
             client_name,
             from,
             to,
             result,
-        } => handle_solved(repo, client_name, from, to, result),
+        } => {
+            handle_solved(repo, client_name, from, to, result);
+            ThreeNResponse::Ok
+        }
     }
 }
 

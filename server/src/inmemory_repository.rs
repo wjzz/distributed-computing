@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 
-use crate::domain::{ClientName, FromTo, Repository, ThreeNResult, ThreeNState};
+use crate::domain::{ClientName, Repository, Task, ThreeNResult, ThreeNState};
 
 pub struct InMemoryRepository {
     from: u64,
     to: u64,
     increment: u64,
-    queue: HashMap<ClientName, FromTo>,
-    results: HashMap<FromTo, (ClientName, ThreeNResult)>,
+    queue: HashMap<ClientName, Task>,
+    results: HashMap<Task, (ClientName, ThreeNResult)>,
 }
 
 impl InMemoryRepository {
@@ -42,15 +42,14 @@ impl Repository for InMemoryRepository {
         self.from = from;
     }
 
-    fn add_to_queue(&mut self, from_to: FromTo, client_name: ClientName) {
+    fn add_to_queue(&mut self, from_to: Task, client_name: ClientName) {
         let _ = self.queue.insert(client_name, from_to);
 
         self.debug();
     }
 
-    fn store_results(&mut self, client_name: ClientName, from: u64, to: u64, result: ThreeNResult) {
-        self.results
-            .insert(FromTo { from, to }, (client_name, result));
+    fn store_results(&mut self, client_name: ClientName, task: Task, result: ThreeNResult) {
+        self.results.insert(task, (client_name, result));
 
         self.debug();
     }
