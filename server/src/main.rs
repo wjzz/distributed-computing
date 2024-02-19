@@ -35,7 +35,15 @@ fn router<R: Repository>(repo: &mut R, request: ThreeNRequest) -> ThreeNResponse
             to,
             result,
         } => {
-            handle_solved(repo, client_name, from, to, result);
+            handle_solved(
+                repo,
+                client_name,
+                Task {
+                    from: from.parse().unwrap(),
+                    to: to.parse().unwrap(),
+                },
+                result,
+            );
             ThreeNResponse::Ok
         }
     }
