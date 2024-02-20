@@ -41,7 +41,7 @@ fn parse_request(input: String) -> Request {
     for line in input.lines() {
         if let Some((header, val)) = line.split_once(':') {
             // println!("[{}] -> [{}]", header, val);
-            if header == "Content-Length" {
+            if header.to_lowercase() == "content-length" {
                 content_length = val.trim().parse::<usize>().unwrap();
             }
         }
