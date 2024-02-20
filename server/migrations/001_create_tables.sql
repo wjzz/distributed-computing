@@ -4,11 +4,6 @@ create table state (
     step bigint not null
 );
 
-insert into
-    state(from_, to_, step)
-values
-    (1, 1000000000, 1000000);
-
 create table queue (
     client_name text primary key,
     task_from bigint not null,
