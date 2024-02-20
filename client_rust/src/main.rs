@@ -1,6 +1,5 @@
 mod three_n;
 
-use serde_json;
 use three_n::three_n;
 
 fn main() {
