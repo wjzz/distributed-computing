@@ -22,4 +22,4 @@ jobs:
       - name: Run tests
         run: cargo test --verbose
       - name: Run clippy
-        run: cargo clippy -Dwarnings
+        run: cargo clippy -- -D warnings
