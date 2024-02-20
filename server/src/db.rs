@@ -47,7 +47,7 @@ impl Repository for PgRepository {
                 &[&client_name],
             )
             .unwrap();
-        if result.len() == 0 {
+        if result.is_empty() {
             return None;
         }
 

@@ -39,7 +39,7 @@ fn parse_request(input: String) -> Request {
 
     let mut content_length = 0;
     for line in input.lines() {
-        if let Some((header, val)) = line.split_once(":") {
+        if let Some((header, val)) = line.split_once(':') {
             // println!("[{}] -> [{}]", header, val);
             if header == "Content-Length" {
                 content_length = val.trim().parse::<usize>().unwrap();

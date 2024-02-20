@@ -60,6 +60,6 @@ impl Repository for InMemoryRepository {
     fn store_results(&mut self, client_name: ClientName, task: StartedTask, result: ThreeNResult) {
         let started_at = task.clone().started_at;
         self.results
-            .insert(task.to_raw_task(), (client_name, started_at, result));
+            .insert(task.into_raw_task(), (client_name, started_at, result));
     }
 }

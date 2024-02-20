@@ -28,7 +28,7 @@ impl RawTask {
 }
 
 impl StartedTask {
-    pub fn to_raw_task(self) -> RawTask {
+    pub fn into_raw_task(self) -> RawTask {
         let StartedTask { from, to, .. } = self;
         RawTask { from, to }
     }

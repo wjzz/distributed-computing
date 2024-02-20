@@ -1,8 +1,8 @@
+mod handlers;
 #[cfg(test)]
 mod inmemory_repository;
-mod usecase;
 
-pub use usecase::*;
+pub use handlers::*;
 
 #[cfg(test)]
 pub use inmemory_repository::*;

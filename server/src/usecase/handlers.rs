@@ -13,7 +13,7 @@ pub fn handle_ready<R: Repository>(repo: &mut R, client_name: String) -> RawTask
     // check if this client has an existing tasks, if so return it again
     // otherwise, allocate new task
     if let Some(task) = repo.fetch_queued_task_by_client(client_name.clone()) {
-        return task.to_raw_task();
+        return task.into_raw_task();
     }
 
     let task = allocate_new_task(repo);
@@ -27,7 +27,7 @@ pub fn handle_solved<R: Repository>(
     client_name: ClientName,
     task: RawTask,
     result: ThreeNResult,
-) -> () {
+) {
     match repo.fetch_queued_task_by_client(client_name.clone()) {
         None => {
             eprintln!("Unknown problem");

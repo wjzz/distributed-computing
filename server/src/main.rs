@@ -52,9 +52,7 @@ pub fn handler<R: Repository>(request_body: Request, repo: &mut R) -> String {
     // println!("request body = {}", request_body);
     if let Ok(request) = serde_json::from_str(&request_body) {
         let response = router(repo, request);
-        let response = serde_json::to_string(&response).unwrap();
-        // println!("response = {}", response);
-        response
+        serde_json::to_string(&response).unwrap()
     } else {
         eprintln!("Incorrect request: [{:?}]", request_body);
         "incorrect request".to_string()
