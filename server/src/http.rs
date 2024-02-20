@@ -8,18 +8,27 @@ type Handler<R> = fn(Request, &mut R) -> String;
 pub type Request = String;
 
 fn handle_read(mut stream: &TcpStream) -> String {
-    let mut buf = [0u8; 4096 * 16];
-    stream.read(&mut buf).unwrap();
-    let req_str = String::from_utf8_lossy(&buf);
-    req_str.to_string()
+    let mut result = vec![];
+    let mut buf = [0u8; 4096];
+    loop {
+        let count = stream.read(&mut buf).unwrap();
+        eprintln!("\tcount = {}", count);
+        result.append(&mut buf[0..count].to_vec());
+        let req_str = String::from_utf8_lossy(&result).to_string();
+        if !req_str.ends_with("\r\n") {
+            return req_str;
+        }
+    }
 }
 
 fn handle_write(mut stream: TcpStream, response_json: String) {
+    eprintln!("\tResponse = {:?}", response_json);
+
     let response = format!(
         "HTTP/1.1 200 OK\r\nContent-Type: text/json; charset=UTF-8\r\n\r\n{}\r\n",
         response_json
     );
-    match stream.write(response.as_bytes()) {
+    match stream.write_all(response.as_bytes()) {
         Ok(_) => println!("Response sent"),
         Err(e) => println!("Failed sending response: {}", e),
     }
@@ -40,6 +49,8 @@ fn parse_request(input: String) -> Request {
     // println!("content length = {:?}", content_length);
 
     let body = &input.lines().last().unwrap()[..content_length];
+    eprintln!("\tContent length = {}", content_length);
+    eprintln!("\tinput = {:?}", input);
     body.to_string()
 }
 
