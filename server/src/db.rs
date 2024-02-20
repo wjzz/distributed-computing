@@ -43,7 +43,7 @@ impl Repository for PgRepository {
         let result = self
             .client
             .query(
-                "SELECT task_from, task_to, started_at FROM queue WHERE client_name = $1",
+                "SELECT task_from, task_to, queued_at FROM queue WHERE client_name = $1",
                 &[&client_name],
             )
             .unwrap();
@@ -65,7 +65,9 @@ impl Repository for PgRepository {
     }
 
     fn delete_queued_task_by_client(&mut self, client_name: ClientName) {
-        todo!()
+        self.client
+            .execute("DELETE FROM queue WHERE client_name = $1", &[&client_name])
+            .unwrap();
     }
 
     fn update_from(&mut self, from: u64) {
@@ -76,10 +78,22 @@ impl Repository for PgRepository {
     }
 
     fn fetch_results_by_client(&mut self, client_name: ClientName) -> Vec<ThreeNResult> {
-        todo!()
+        let result = self
+            .client
+            .query(
+                "SELECT result FROM results WHERE client_name = $1",
+                &[&client_name],
+            )
+            .unwrap();
+        result.iter().map(|row| row.get(0)).collect()
     }
 
     fn store_results(&mut self, client_name: ClientName, task: StartedTask, result: ThreeNResult) {
-        todo!()
+        self.client
+            .execute(
+                "INSERT INTO results(task_from, task_to, result, client_name, started_at) VALUES ($1, $2, $3, $4, $5)",
+                &[&(task.from as i64), &(task.to as i64), &result, &client_name, &task.started_at],
+            )
+            .unwrap();
     }
 }

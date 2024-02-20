@@ -22,13 +22,6 @@ impl InMemoryRepository {
             results: HashMap::new(),
         }
     }
-
-    pub fn debug(&self) {
-        eprintln!(
-            "current state: from = {}, to = {}, queue = {:?} results = {:?}",
-            self.from, self.to, self.queue, self.results
-        );
-    }
 }
 
 impl Repository for InMemoryRepository {
@@ -46,12 +39,10 @@ impl Repository for InMemoryRepository {
 
     fn add_to_queue(&mut self, task: RawTask, client_name: ClientName) {
         let _ = self.queue.insert(client_name, task.to_started_task());
-
-        self.debug();
     }
 
     fn fetch_queued_task_by_client(&mut self, client_name: ClientName) -> Option<StartedTask> {
-        self.queue.get(&client_name).copied()
+        self.queue.get(&client_name).cloned()
     }
 
     fn delete_queued_task_by_client(&mut self, client_name: ClientName) {
@@ -67,9 +58,8 @@ impl Repository for InMemoryRepository {
     }
 
     fn store_results(&mut self, client_name: ClientName, task: StartedTask, result: ThreeNResult) {
+        let started_at = task.clone().started_at;
         self.results
-            .insert(task.to_raw_task(), (client_name, task.started_at, result));
-
-        self.debug();
+            .insert(task.to_raw_task(), (client_name, started_at, result));
     }
 }

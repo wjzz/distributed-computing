@@ -56,6 +56,7 @@ pub fn handler<R: Repository>(request_body: Request, repo: &mut R) -> String {
         // println!("response = {}", response);
         response
     } else {
+        eprintln!("Incorrect request: [{:?}]", request_body);
         "incorrect request".to_string()
     }
 }

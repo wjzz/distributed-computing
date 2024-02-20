@@ -31,9 +31,15 @@ pub fn handle_solved<R: Repository>(
     match repo.fetch_queued_task_by_client(client_name.clone()) {
         None => {
             eprintln!("Unknown problem");
-            return;
         }
         Some(task_timestamp) => {
+            if task.from != task_timestamp.from || task.to != task_timestamp.to {
+                eprintln!(
+                    "Task range doesn't match! Got {:?} but queued was {:?}",
+                    task, task_timestamp
+                );
+                return;
+            }
             repo.delete_queued_task_by_client(client_name.clone());
             repo.store_results(client_name, task_timestamp, result);
         }
@@ -97,6 +103,23 @@ mod tests {
         let solved = repo.fetch_results_by_client(client_name());
 
         assert_eq!(solved, vec![result()]);
+    }
+
+    #[test]
+    fn when_solving_task_provided_must_match_queued() {
+        let mut repo = InMemoryRepository::new();
+        let task = handle_ready(&mut repo, client_name());
+        let wrong_task = RawTask { from: 1, to: 1 };
+        handle_solved(&mut repo, client_name(), wrong_task, result());
+
+        let solved = repo.fetch_results_by_client(client_name());
+        let task_queued_for_client = repo.fetch_queued_task_by_client(client_name());
+
+        assert_eq!(solved.len(), 0);
+        assert!(task_queued_for_client.is_some());
+        let task_queued = task_queued_for_client.unwrap();
+        assert_eq!(task_queued.from, task.from);
+        assert_eq!(task_queued.to, task.to);
     }
 
     #[test]

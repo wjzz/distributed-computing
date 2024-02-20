@@ -1,5 +1,8 @@
+#[cfg(test)]
 mod inmemory_repository;
 mod usecase;
 
-pub use inmemory_repository::*;
 pub use usecase::*;
+
+#[cfg(test)]
+pub use inmemory_repository::*;

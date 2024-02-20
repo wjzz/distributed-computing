@@ -9,7 +9,7 @@ pub struct RawTask {
     pub to: u64,
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct StartedTask {
     pub from: u64,
     pub to: u64,

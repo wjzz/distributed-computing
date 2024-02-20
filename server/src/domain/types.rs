@@ -16,8 +16,8 @@ pub struct ThreeNState {
 pub type ClientName = String;
 pub type ThreeNResult = String;
 
-pub type Timestamp = i64;
+pub type Timestamp = chrono::DateTime<Utc>;
 
 pub fn current_timestamp() -> Timestamp {
-    Utc::now().timestamp()
+    Utc::now()
 }
